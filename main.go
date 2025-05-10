@@ -21,12 +21,6 @@ func generateRandomElements(size int) []int {
 		return []int{}
 	}
 
-	//проверка на отрицательное число
-	if size < 0 {
-		fmt.Println("\nчисло не может быть отрицательным")
-		return []int{}
-	}
-
 	//генерация чисел
 	randNumber := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -51,31 +45,6 @@ func maximum(data []int) int {
 
 	if len(data) == 1 {
 		fmt.Println("\nСлайс содержит 1 элемент")
-		return data[0]
-	}
-
-	//проверка на отрицательные числа
-	negative := false
-	for _, n := range data {
-		if n < 0 {
-			negative = true
-			break
-		}
-	}
-	if negative {
-		fmt.Println("\nСлайс содержит отрицательные числа")
-	}
-
-	//проверка на одинаковые числа в слайсе
-	allNumber := true
-	for i := 1; i < len(data); i++ {
-		if data[i] != data[i-1] {
-			allNumber = false
-			break
-		}
-	}
-	if allNumber {
-		fmt.Println("\nВсе числа в слайсе одинаковые")
 		return data[0]
 	}
 
@@ -110,31 +79,6 @@ func maxChunks(data []int) int {
 		return data[0]
 	}
 
-	//проверка на отрицательные числа
-	negative := false
-	for _, n := range data {
-		if n < 0 {
-			negative = true
-			break
-		}
-	}
-	if negative {
-		fmt.Println("\nСлайс содержит отрицательное число")
-	}
-
-	//проверка на одинаковые числа в слайсе
-	allNumber := true
-	for i := 1; i < len(data); i++ {
-		if data[i] != data[i-1] {
-			allNumber = false
-			break
-		}
-	}
-	if allNumber {
-		fmt.Println("\nВсе числа в слайсе одинаковые")
-		return data[0]
-	}
-
 	//размер слайса
 	newSlice := len(data) / CHUNKS
 
@@ -143,41 +87,22 @@ func maxChunks(data []int) int {
 
 	var wg sync.WaitGroup
 
-	//запуск 8 горутин
 	for i := 0; i < CHUNKS; i++ {
+		firstIndex := i * newSlice
+		lastIndex := firstIndex + newSlice
+		if i == CHUNKS-1 {
+			lastIndex = len(data)
+		}
+
 		wg.Add(1)
-
-		go func(i int) {
+		go func(c []int, idx int) {
 			defer wg.Done()
-
-			firstIndex := i * newSlice
-			lastIndex := firstIndex + newSlice
-			if i == CHUNKS-1 {
-				lastIndex = len(data)
-			}
-
-			max := data[firstIndex]
-
-			for _, v := range data[firstIndex:lastIndex] {
-				if v > max {
-					max = v
-				}
-			}
-
-			maxNumber[i] = max
-		}(i)
+			maxNumber[idx] = maximum(c)
+		}(data[firstIndex:lastIndex], i)
 	}
 
 	wg.Wait()
-
-	result := maxNumber[0]
-	for _, m := range maxNumber[1:] {
-		if m > result {
-			result = m
-		}
-	}
-
-	return result
+	return maximum(maxNumber)
 
 }
 
